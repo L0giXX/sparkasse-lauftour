@@ -30,8 +30,8 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "is_admin", nullable = false)
-    private Boolean isAdmin;
+    @Column(name = "role", nullable = false)
+    private UserRole role;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

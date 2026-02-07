@@ -1,6 +1,7 @@
 package at.marc.lauftour.services.impl;
 
 import at.marc.lauftour.domain.entities.User;
+import at.marc.lauftour.domain.entities.UserRole;
 import at.marc.lauftour.repositories.UserRepository;
 import at.marc.lauftour.services.AuthService;
 import io.jsonwebtoken.Claims;
@@ -27,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private String secretKey = "verysecret";
+    private String secretKey = "Dkc+PHxm/mZE1TQw3m9AcFbM4lQ/Ohce4EY/e4FMapo=";
     private final Long jwtExpiryMs = 86400000L;
 
 
@@ -68,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPassword(passwordEncoder.encode(password));
-        user.setIsAdmin(false);
+        user.setRole(UserRole.USER);
         userRepository.save(user);
 
         return userDetailsService.loadUserByUsername(normalized);

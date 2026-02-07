@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/api/v1/auth")
@@ -20,11 +17,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
+    @GetMapping("/welcome")
+    public String welcome() {
+        return "Welcome to Lauftour!";
+    }
+
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
-        UserDetails user = authService.register(registerRequest.getFirstName(), registerRequest.getLastName(),
-                registerRequest.getEmail(), registerRequest.getPassword());
-        RegisterResponse registerResponse = RegisterResponse.builder().email(user.getUsername()).password(user.getPassword()).build();
+        UserDetails userDetails = authService.register(registerRequest.getEmail(), registerRequest.getPassword(),
+                registerRequest.getFirstName(), registerRequest.getLastName());
+        String token = authService.generateToken(userDetails);
+        RegisterResponse registerResponse = RegisterResponse.builder()
+                .token(token).expiresIn(86400)
+                .email(userDetails.getUsername())
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
+                .build();
         return new ResponseEntity<>(registerResponse, HttpStatus.CREATED);
     }
 
