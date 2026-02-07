@@ -6,8 +6,10 @@ import at.marc.lauftour.repositories.UserRepository;
 import at.marc.lauftour.services.AuthService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,9 +30,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private String secretKey = "Dkc+PHxm/mZE1TQw3m9AcFbM4lQ/Ohce4EY/e4FMapo=";
-    private final Long jwtExpiryMs = 86400000L;
+    @Value("${jwt.secret}")
+    private String secretKey;
 
+    @Value("${jwt.expire}")
+    private long jwtExpiryMs;
 
     @Override
     public UserDetails authenticate(String email, String password) {
@@ -52,7 +56,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserDetails validateToken(String token) {
-        String username = extractUsername(token);
+        Claims claims = extractAllClaims(token);
+        if (isTokenExpired(claims)) {
+            throw new IllegalArgumentException("JWT is expired");
+        }
+        String username = claims.getSubject();
         return userDetailsService.loadUserByUsername(username);
     }
 
@@ -75,17 +83,21 @@ public class AuthServiceImpl implements AuthService {
         return userDetailsService.loadUserByUsername(normalized);
     }
 
-    private String extractUsername(String token) {
-        Claims claims = Jwts.parser()
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.getSubject();
+    }
+
+    private boolean isTokenExpired(Claims claims) {
+        Date expiration = claims.getExpiration();
+        return expiration != null && expiration.before(new Date());
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes();
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
