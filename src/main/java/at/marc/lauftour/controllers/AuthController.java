@@ -1,21 +1,24 @@
 package at.marc.lauftour.controllers;
 
-import at.marc.lauftour.domain.dtos.AuthResponse;
-import at.marc.lauftour.domain.dtos.LoginRequest;
-import at.marc.lauftour.domain.dtos.RegisterRequest;
-import at.marc.lauftour.domain.dtos.RegisterResponse;
+import at.marc.lauftour.domain.dtos.*;
+import at.marc.lauftour.domain.entities.User;
+import at.marc.lauftour.repositories.UserRepository;
 import at.marc.lauftour.services.AuthService;
+import at.marc.lauftour.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final UserService userService;
 
     @GetMapping("/welcome")
     public String welcome() {
@@ -37,10 +40,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         UserDetails userDetails = authService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         String token = authService.generateToken(userDetails);
-        AuthResponse authResponse = AuthResponse.builder().token(token).expiresIn(86400).build();
-        return ResponseEntity.ok(authResponse);
+        LoginResponse loginResponse = LoginResponse.builder().token(token).expiresIn(86400).build();
+        return ResponseEntity.ok(loginResponse);
+    }
+
+    @PutMapping("/changepassword")
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest, Principal principal) {
+        String email = principal.getName();
+        String oldPassword = changePasswordRequest.getOldPassword();
+        String newPassword = changePasswordRequest.getNewPassword();
+        userService.changePassword(email, oldPassword, newPassword);
+        return ResponseEntity.noContent().build();
     }
 }

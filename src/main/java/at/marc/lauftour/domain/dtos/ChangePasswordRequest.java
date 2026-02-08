@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthResponse {
-    private String token;
-    private long expiresIn;
+public class ChangePasswordRequest {
+    private String oldPassword;
+    private String newPassword;
 }
