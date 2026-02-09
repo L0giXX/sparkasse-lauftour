@@ -4,6 +4,7 @@ import at.marc.lauftour.domain.entities.User;
 import at.marc.lauftour.domain.entities.UserRole;
 import at.marc.lauftour.repositories.UserRepository;
 import at.marc.lauftour.services.AuthService;
+import at.marc.lauftour.services.UserRunnerService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -30,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRunnerService userRunnerService;
 
     @Value("${jwt.secret}")
     private String secretKey;
@@ -81,6 +83,10 @@ public class AuthServiceImpl implements AuthService {
         user.setBirthDate(dateOfBirth);
         user.setRole(UserRole.USER);
         userRepository.save(user);
+
+        // Neuen Läufer anhand von User erstellen, sofern noch nicht in DB
+        // User und Läufer linken, falls noch nicht gemacht
+        userRunnerService.bindOrCreateRunnerForUser(user);
 
         return userDetailsService.loadUserByUsername(normalized);
     }

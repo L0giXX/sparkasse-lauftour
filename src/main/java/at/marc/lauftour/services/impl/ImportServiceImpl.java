@@ -44,7 +44,9 @@ public class ImportServiceImpl implements ImportService {
             Sheet sheet = wb.getSheetAt(0);
             DataFormatter fmt = new DataFormatter();
 
+            // Header herauslesen (Lauftyp	Vorname	Nachname	Geburtsjahr	Email	Verein	Laufzeit)
             Map<String, Integer> idx = headerIndex(sheet.getRow(0), fmt);
+
             int rows = 0;
             for (int r = 1; r <= sheet.getLastRowNum(); r++) {
                 Row row = sheet.getRow(r);
@@ -68,6 +70,8 @@ public class ImportServiceImpl implements ImportService {
                 if (isBlank(firstName) || isBlank(lastName) || birthDate == null || isBlank(raceType)) continue;
 
                 LocalDate finalBirthDate = birthDate;
+
+                // Neuen Läufer erstellen sofern Vorname, Nachname und Geburtsdatum unterschiedlich
                 Runner runner = runnerRepository.
                         findByFirstNameIgnoreCaseAndLastNameIgnoreCaseAndBirthDate(firstName.trim(), lastName.trim(), birthDate).
                         orElseGet(() -> {
@@ -92,7 +96,7 @@ public class ImportServiceImpl implements ImportService {
             log.info("ImportBatch {} parsed rows={}", batch.getId(), rows);
             batch.setImportStatus(ImportStatus.PARSED);
             return batchRepository.save(batch);
-        } catch (IOException e) {
+        } catch (Exception e) {
             batch.setImportStatus(ImportStatus.FAILED);
             batch.setErrorMessage(e.getMessage());
             batchRepository.save(batch);
@@ -110,6 +114,7 @@ public class ImportServiceImpl implements ImportService {
         return idx;
     }
 
+    // Zelle auslesen für spezifizierte Reihe und Spalte
     private static String get(DataFormatter fmt, Row row, Map<String, Integer> idx, String key) {
         Integer i = idx.get(key);
         if (i == null) return null;
@@ -117,6 +122,7 @@ public class ImportServiceImpl implements ImportService {
         return c == null ? null : fmt.formatCellValue(c);
     }
 
+    // Zelle auslesen für spezifizierte Reihe und Spalte und Datum-Transformation
     private static LocalDate getDate(Row row, Map<String, Integer> idx, String key, DataFormatter fmt) {
         Integer i = idx.get(key);
         if (i == null) return null;
