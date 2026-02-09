@@ -1,8 +1,6 @@
 package at.marc.lauftour.controllers;
 
 import at.marc.lauftour.domain.dtos.*;
-import at.marc.lauftour.domain.entities.User;
-import at.marc.lauftour.repositories.UserRepository;
 import at.marc.lauftour.services.AuthService;
 import at.marc.lauftour.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
         UserDetails userDetails = authService.register(registerRequest.getEmail(), registerRequest.getPassword(),
-                registerRequest.getFirstName(), registerRequest.getLastName());
+                registerRequest.getFirstName(), registerRequest.getLastName(), registerRequest.getDateOfBirth());
         String token = authService.generateToken(userDetails);
         RegisterResponse registerResponse = RegisterResponse.builder()
                 .token(token).expiresIn(86400)

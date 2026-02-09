@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 .subject(userDetails.getUsername())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiryMs))
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .signWith(getSigningKey())
+                .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -65,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDetails register(String email, String password, String firstName, String lastName) {
+    public UserDetails register(String email, String password, String firstName, String lastName, LocalDate dateOfBirth) {
         String normalized = email.toLowerCase();
 
         if (userRepository.findByEmail(normalized).isPresent()) {
@@ -77,6 +78,7 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPassword(passwordEncoder.encode(password));
+        user.setBirthDate(dateOfBirth);
         user.setRole(UserRole.USER);
         userRepository.save(user);
 
