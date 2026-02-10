@@ -8,9 +8,11 @@ import at.marc.lauftour.repositories.ImportBatchRepository;
 import at.marc.lauftour.repositories.ResultRepository;
 import at.marc.lauftour.repositories.RunnerRepository;
 import at.marc.lauftour.services.ImportService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +32,16 @@ public class ImportServiceImpl implements ImportService {
     private final ImportBatchRepository batchRepository;
     private final RunnerRepository runnerRepository;
     private final ResultRepository resultRepository;
+
+    @Override
+    @Transactional
+    public String deleteFile(String fileName) {
+        if (!batchRepository.existsByFileName(fileName)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Import file not found");
+        }
+        batchRepository.deleteByFileName(fileName);
+        return fileName;
+    }
 
     @Override
     public ImportBatch importExcel(MultipartFile file) {

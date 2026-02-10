@@ -8,4 +8,7 @@ import java.util.UUID;
 
 @Repository
 public interface ImportBatchRepository extends JpaRepository<ImportBatch, UUID> {
+    void deleteByFileName(String fileName);
+
+    boolean existsByFileName(String fileName);
 }

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -28,6 +30,10 @@ public class ImportBatch {
 
     @Column(nullable = false)
     private ImportStatus importStatus;
+
+    @OneToMany(mappedBy = "importBatch", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Result> results = new ArrayList<>();
+
 
     @Column(name = "error_message")
     private String errorMessage;

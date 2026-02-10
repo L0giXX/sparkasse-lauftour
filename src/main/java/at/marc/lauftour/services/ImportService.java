@@ -5,4 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ImportService {
     ImportBatch importExcel(MultipartFile file);
+
+    String deleteFile(String fileName);
 }
