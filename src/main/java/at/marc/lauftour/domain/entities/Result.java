@@ -26,11 +26,13 @@ public class Result {
 
     @Column(name = "race_type", nullable = false)
     private String raceType;
+
     @Column(name = "duration_ms")
     private Integer durationMs;
 
     @Column(name = "participant_email")
     private String participantEmail;
+
     @Column(name = "club")
     private String club;
 

@@ -22,6 +22,11 @@ public class UserServiceImpl implements UserService {
     public User getUserById(UUID id) {
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found: " + id));
     }
+    
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+    }
 
     @Override
     public void changePassword(String email, String oldPassword, String newPassword) {

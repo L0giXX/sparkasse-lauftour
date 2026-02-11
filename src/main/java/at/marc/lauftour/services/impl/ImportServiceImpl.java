@@ -1,5 +1,6 @@
 package at.marc.lauftour.services.impl;
 
+import at.marc.lauftour.domain.dtos.ImportBatchResponse;
 import at.marc.lauftour.domain.entities.ImportBatch;
 import at.marc.lauftour.domain.entities.ImportStatus;
 import at.marc.lauftour.domain.entities.Result;
@@ -12,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +32,7 @@ public class ImportServiceImpl implements ImportService {
     private final ImportBatchRepository batchRepository;
     private final RunnerRepository runnerRepository;
     private final ResultRepository resultRepository;
+    private final UserRunnerServiceImpl urService;
 
     @Override
     @Transactional
@@ -44,7 +45,7 @@ public class ImportServiceImpl implements ImportService {
     }
 
     @Override
-    public ImportBatch importExcel(MultipartFile file) {
+    public ImportBatchResponse importExcel(MultipartFile file) {
         ImportBatch batch = new ImportBatch();
         batch.setSource(file.getContentType());
         batch.setFileName(file.getOriginalFilename());
@@ -106,7 +107,18 @@ public class ImportServiceImpl implements ImportService {
             }
             log.info("ImportBatch {} parsed rows={}", batch.getId(), rows);
             batch.setImportStatus(ImportStatus.PARSED);
-            return batchRepository.save(batch);
+            batch = batchRepository.save(batch);
+
+            // Erstellte Runner von ImportBatch mit vorhandenen User verknüpfen
+            int bound = urService.bindUsersForBatch(batch.getId());
+            log.info("ImportBatch {} auto-bound {} users", batch.getId(), bound);
+
+            return ImportBatchResponse.builder()
+                    .source(batch.getSource())
+                    .fileName(batch.getFileName())
+                    .status(batch.getImportStatus())
+                    .createdResults(rows)
+                    .build();
         } catch (Exception e) {
             batch.setImportStatus(ImportStatus.FAILED);
             batch.setErrorMessage(e.getMessage());

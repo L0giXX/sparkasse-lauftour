@@ -1,10 +1,11 @@
 package at.marc.lauftour.services;
 
-import at.marc.lauftour.domain.entities.ImportBatch;
+import at.marc.lauftour.domain.dtos.ImportBatchResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+
 public interface ImportService {
-    ImportBatch importExcel(MultipartFile file);
+    ImportBatchResponse importExcel(MultipartFile file);
 
     String deleteFile(String fileName);
 }
