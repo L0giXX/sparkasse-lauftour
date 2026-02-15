@@ -13,6 +13,15 @@ import java.util.UUID;
 public interface ResultRepository extends JpaRepository<Result, UUID> {
     @Query("""
                 select count(distinct r.importBatch.id)
+                from UserRunner ur
+                join Result r on r.runner = ur.runner
+                where ur.user.id = :userId
+                  and r.importBatch is not null
+            """)
+    long countDistinctRunsByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+                select count(distinct r.importBatch.id)
                 from Result r
                 where r.runner.id in :runnerIds
                   and r.importBatch is not null

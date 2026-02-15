@@ -63,7 +63,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandled(Exception ex, HttpServletRequest request) {
-        log.error("Auth failed for path={}: {}", request.getRequestURI(), ex.getClass().getSimpleName());
         log.error("Unhandled exception", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", request.getRequestURI());
     }

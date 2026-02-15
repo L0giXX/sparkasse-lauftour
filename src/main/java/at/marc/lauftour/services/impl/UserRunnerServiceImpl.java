@@ -35,7 +35,7 @@ public class UserRunnerServiceImpl implements UserRunnerService {
                     r.setBirthDate(user.getBirthDate());
                     return runnerRepository.save(r);
                 });
-        if (!userRunnerRepository.existsByUser_IdAndRunner_Id(user.getId(), runner.getId())) {
+        if (userRunnerRepository.existsByUser_IdAndRunner_Id(user.getId(), runner.getId())) {
             UserRunner link = new UserRunner();
             link.setUser(user);
             link.setRunner(runner);
@@ -46,13 +46,7 @@ public class UserRunnerServiceImpl implements UserRunnerService {
 
     @Override
     public long countRacesForUser(UUID userId) {
-        List<UUID> runnerIds = userRunnerRepository.findByUser_Id(userId)
-                .stream()
-                .map(ur -> ur.getRunner().getId())
-                .toList();
-        if (runnerIds.isEmpty()) return 0;
-
-        return resultRepository.countDistinctImportBatchesByRunnerIds(runnerIds);
+        return resultRepository.countDistinctRunsByUserId(userId);
     }
 
     @Override
@@ -71,7 +65,7 @@ public class UserRunnerServiceImpl implements UserRunnerService {
             if (opt.isEmpty()) continue;
             User user = opt.get();
 
-            if (!userRunnerRepository.existsByUser_IdAndRunner_Id(user.getId(), runner.getId())) {
+            if (userRunnerRepository.existsByUser_IdAndRunner_Id(user.getId(), runner.getId())) {
                 UserRunner link = new UserRunner();
                 link.setUser(user);
                 link.setRunner(runner);
